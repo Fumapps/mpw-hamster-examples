@@ -16,29 +16,13 @@ FetchContent_Declare(hamster_lib
 FetchContent_GetProperties(hamster_lib)
 FetchContent_MakeAvailable(hamster_lib)
 
-set(hamster_ui_SOURCE_DIR ${hamster_lib_SOURCE_DIR}/ui)
-get_directory_property(mpw_lib_SOURCE_DIR DIRECTORY ${hamster_lib_SOURCE_DIR} DEFINITION mpw_lib_SOURCE_DIR)
-get_directory_property(hamster_ui_SRCS DIRECTORY ${hamster_lib_SOURCE_DIR}/ui DEFINITION SRCS)
-string(REGEX REPLACE "([A-Za-z_/]+\\.(h|cpp|c))" "${hamster_ui_SOURCE_DIR}/\\1" hamster_ui_SRCS "${hamster_ui_SRCS}")
+# Race Executable
+add_executable(hamster_race race/Race.cpp race/HamsterRaceGame.cpp)
+target_include_directories(hamster_race PUBLIC race)
 
-include_directories(${mpw_lib_SOURCE_DIR}/core/src/impl)
-include_directories(${mpw_lib_SOURCE_DIR}/core/src/generated)
-include_directories(${mpw_lib_SOURCE_DIR}/core/src/framework)
-include_directories(${hamster_lib_SOURCE_DIR}/core/src/impl)
-include_directories(${hamster_lib_SOURCE_DIR}/core/src/generated)
-include_directories(${hamster_ui_SOURCE_DIR})
+target_link_libraries(hamster_race hamstersimulator_main_lib)
 
-# Own Sources
-include_directories(.)
-# set(SRCS ${hamster_ui_SRCS})
-
-add_executable(mpw_hamster_examples main.cpp)
-target_link_libraries(mpw_hamster_examples hamster_core_lib hamstersimulator_ui_lib)
-
-# Copy resources
-add_custom_command(TARGET mpw_hamster_examples PRE_BUILD
+# Copy resources into binary root
+add_custom_command(TARGET hamster_race PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${hamster_ui_SOURCE_DIR}/resources/ ${CMAKE_CURRENT_BINARY_DIR}/resources)
-add_custom_command(TARGET mpw_hamster_examples PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${hamster_lib_SOURCE_DIR}/resources/ ${CMAKE_CURRENT_BINARY_DIR}/resources)
+        ${CMAKE_CURRENT_SOURCE_DIR}/race/ter/ ${CMAKE_CURRENT_BINARY_DIR}/ter)
