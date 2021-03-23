@@ -17,7 +17,12 @@ FetchContent_GetProperties(hamster_lib)
 FetchContent_MakeAvailable(hamster_lib)
 
 # Race Executable
-add_executable(hamster_race race/Race.cpp race/HamsterRaceGame.cpp)
+
+set(SRCS race/Main.cpp
+        race/HamsterRaceGame.h race/HamsterRaceGame.cpp
+        race/RaceHamster.h race/RaceHamster.cpp)
+
+add_executable(hamster_race ${SRCS})
 target_include_directories(hamster_race PUBLIC race)
 
 target_link_libraries(hamster_race hamstersimulator_main_lib)
