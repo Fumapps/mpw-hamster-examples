@@ -1,9 +1,2 @@
-CMakeListsLocalProperties.cmake
-
 /.idea
-/cmake-build-debug
 *.iml
-
-/.vs
-/out
-*.DotSettings.user

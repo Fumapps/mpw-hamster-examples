@@ -13,7 +13,10 @@ FetchContent_Declare(hamster_lib
         CMAKE_ARGS "-Wno-dev"
 )
 FetchContent_GetProperties(hamster_lib)
-FetchContent_MakeAvailable(hamster_lib)
+if(NOT hamster_lib_POPULATED)
+    FetchContent_Populate(hamster_lib)
+    add_subdirectory(${hamster_lib_SOURCE_DIR} ${hamster_lib_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # Race Executable
 set(SRCS race/Main.cpp
