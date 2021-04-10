@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>de.unistuttgart.iste.sqa.oo.hamstersimulator</groupId>
+	<artifactId>hamster-java-examples</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<name>MPW Hamster Simulator Java Examples</name>
+
+	<properties>
+		<maven.compiler.release>15</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>releases</id>
+			<name>mpw-libs-release</name>
+			<url>https://rss-artifactory.ddnss.org/artifactory/mpw-libs-release</url>
+		</repository>
+		<repository>
+			<snapshots />
+			<id>snapshots</id>
+			<name>mpw-libs-snapshot</name>
+			<url>https://rss-artifactory.ddnss.org/artifactory/mpw-libs-snapshot</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.unistuttgart.iste.sqa.mpw.hamstersimulator</groupId>
+			<artifactId>main</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<release>15</release>
+					<source>15</source>
+					<target>15</target>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M4</version>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
