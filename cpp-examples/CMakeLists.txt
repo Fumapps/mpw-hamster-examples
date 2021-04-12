@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 include(FetchContent)
 
 FetchContent_Declare(hamster_lib
-        GIT_REPOSITORY https://github.com/Fumapps/mpw-modeling-hamster.git
-        GIT_TAG cpp-simulator
+        GIT_REPOSITORY https://github.com/SQAHamster/mpw-modeling-hamster.git
+        GIT_TAG 1.0.0-cpp-simulator
         SOURCE_DIR hamster_lib
         CMAKE_ARGS "-Wno-dev"
 )
