@@ -19,9 +19,9 @@ if(NOT hamster_lib_POPULATED)
 endif()
 
 # Race Executable
-set(SRCS race/Main.cpp
+set(SRCS "Main.cpp"
         race/HamsterRaceGame.h race/HamsterRaceGame.cpp
-        race/RaceHamster.h race/RaceHamster.cpp)
+        race/RaceHamster.h race/RaceHamster.cpp "rss-hamster/rss-hamster.h" "rss-hamster/rss-hamster.cpp")
 
 add_executable(hamster_race ${SRCS})
 target_include_directories(hamster_race PUBLIC race)
