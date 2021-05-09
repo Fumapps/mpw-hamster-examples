@@ -21,7 +21,7 @@ endif()
 # Race Executable
 set(SRCS "Main.cpp"
         race/HamsterRaceGame.h race/HamsterRaceGame.cpp
-        race/RaceHamster.h race/RaceHamster.cpp "rss-hamster/rss-hamster.h" "rss-hamster/rss-hamster.cpp")
+        race/RaceHamster.h race/RaceHamster.cpp "rss-hamster/rss-hamster.h" "rss-hamster/rss-hamster.cpp" rss-hamster/blocking_queue.h)
 
 add_executable(hamster_race ${SRCS})
 target_include_directories(hamster_race PUBLIC race)

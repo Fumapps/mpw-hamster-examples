@@ -3,7 +3,7 @@
 int main() {
     init();
     turnLeft();
-//    move();
+    move();
     deinit();
     return 0;
 }

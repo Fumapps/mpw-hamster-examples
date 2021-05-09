@@ -1,14 +1,17 @@
 #include "rss-hamster.h"
-#include <thread>
-#include <chrono>
 #include "MpwSemaphore.h"
+#include <thread>
+#include <Mode.h>
+
+extern int main(void);
+
+void execCommand(const std::function<void(Hamster&)>&);
 
 using namespace mpw;
 using namespace hamster;
 using namespace hamstersimulator;
 
 SimpleHamsterGameDummy* runningGame = nullptr;
-std::thread gui_thread;
 framework::Semaphore gameRunnerLock;
 framework::Semaphore guiInitializerLock;
 
@@ -17,31 +20,57 @@ void SimpleHamsterGameDummy::run() {
 	loadTerritoryFromResourceFile("ter/looping.ter");
 	game->startGame();
 	guiInitializerLock.release();
-	gameRunnerLock.acquire();
-	gameRunnerLock.acquire();
+
+	std::thread mainThread([](){
+	    try {
+            ::main();
+        } catch (std::exception ex) {};
+	});
+
+    while (const std::function<void(Hamster&)>& command = commandQueue.front()) {
+        commandQueue.pop();
+        try {
+            command(this->getHamster());
+            resultQueue.push(std::optional<std::exception>());
+        } catch (std::exception& e) {
+            resultQueue.push(std::make_optional(e));
+            this->game->confirmAlert(e);
+            this->game->stopGame();
+            break;
+        }
+    }
+    resultQueue.push(std::optional<std::exception>());
+    mainThread.join();
 };
 
-void main_gui() {
-	SimpleHamsterGameDummy::createInstance<SimpleHamsterGameDummy>();
-}
-
 void init() {
-	std::thread gui(main_gui);
-	gui_thread = std::move(gui);
-	guiInitializerLock.acquire();
-	guiInitializerLock.acquire();
-}
-
-void move() {
-	runningGame->getHamster().move();
+    static volatile bool firstRun = true;
+    if (firstRun) {
+        firstRun = false;
+        SimpleHamsterGameDummy::createInstance<SimpleHamsterGameDummy>();
+        exit(0);
+    } else {
+        guiInitializerLock.acquire();
+        guiInitializerLock.acquire();
+    }
 }
 
 void turnLeft() {
-	runningGame->getHamster().turnLeft();
+    execCommand(&hamster::Hamster::turnLeft);
 }
 
+void move() {
+    execCommand(&hamster::Hamster::move);
+}
 void deinit() {
+    runningGame->sendCommand(nullptr);
 	gameRunnerLock.release();
-	gui_thread.join();
 	runningGame = nullptr;
+}
+
+void execCommand(const std::function<void(Hamster&)>& f) {
+    auto result = runningGame->sendCommand(f);
+    if (result.has_value()) {
+        throw result.value();
+    }
 }
