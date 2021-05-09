@@ -62,6 +62,27 @@ void turnLeft() {
 void move() {
     execCommand(&hamster::Hamster::move);
 }
+
+void pickGrain() {
+    execCommand(&hamster::Hamster::pickGrain);
+}
+
+void putGrain() {
+    execCommand(&hamster::Hamster::putGrain);
+}
+
+bool frontIsClear() {
+    return runningGame->getHamster().frontIsClear();
+}
+
+bool grainAvailable() {
+    return runningGame->getHamster().grainAvailable();
+}
+
+bool mouthIsEmpty() {
+    return runningGame->getHamster().mouthEmpty();
+}
+
 void deinit() {
     runningGame->sendCommand(nullptr);
 	gameRunnerLock.release();

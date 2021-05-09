@@ -2,8 +2,10 @@
 
 int main() {
     init();
-    turnLeft();
-    move();
+    //turnLeft();
+    while(frontIsClear()) {
+        move();
+    }
     deinit();
     return 0;
 }
