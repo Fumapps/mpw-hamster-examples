@@ -11,13 +11,13 @@ using namespace mpw;
 using namespace hamster;
 using namespace hamstersimulator;
 
-SimpleHamsterGameDummy* runningGame = nullptr;
+SimpleHamsterGameInC* runningGame = nullptr;
 framework::Semaphore gameRunnerLock;
 framework::Semaphore guiInitializerLock;
 
-void SimpleHamsterGameDummy::run() {
+void SimpleHamsterGameInC::run() {
 	runningGame = this;
-	loadTerritoryFromResourceFile("ter/looping.ter");
+	loadTerritoryFromResourceFile(this->territoryFilename);
 	game->startGame();
 	guiInitializerLock.release();
 
@@ -30,7 +30,7 @@ void SimpleHamsterGameDummy::run() {
     while (const std::function<void(Hamster&)>& command = commandQueue.front()) {
         commandQueue.pop();
         try {
-            command(this->getHamster());
+            command(this->getDefaultHamster());
             resultQueue.push(std::optional<std::exception>());
         } catch (std::exception& e) {
             resultQueue.push(std::make_optional(e));
@@ -43,11 +43,16 @@ void SimpleHamsterGameDummy::run() {
     mainThread.join();
 };
 
-void init() {
+void init(void) {
+    init("ter/looping.ter");
+}
+
+void init(const char* territoryFilename) {
     static volatile bool firstRun = true;
     if (firstRun) {
         firstRun = false;
-        SimpleHamsterGameDummy::createInstance<SimpleHamsterGameDummy>();
+        std::string filename(territoryFilename);
+        SimpleHamsterGameInC::createInstance(filename);
         exit(0);
     } else {
         guiInitializerLock.acquire();
@@ -71,16 +76,30 @@ void putGrain() {
     execCommand(&hamster::Hamster::putGrain);
 }
 
+void write(const char *message) {
+    runningGame->getDefaultHamster().write(message);
+}
+
+void writef(const char *message_template, ...)
+{
+    char buffer[1000];
+    va_list args;
+    va_start(args, message_template);
+    vsnprintf(buffer, 1000, message_template, args);
+    write(buffer);
+    va_end(args);
+}
+
 bool frontIsClear() {
-    return runningGame->getHamster().frontIsClear();
+    return runningGame->getDefaultHamster().frontIsClear();
 }
 
 bool grainAvailable() {
-    return runningGame->getHamster().grainAvailable();
+    return runningGame->getDefaultHamster().grainAvailable();
 }
 
-bool mouthIsEmpty() {
-    return runningGame->getHamster().mouthEmpty();
+bool mouthEmpty() {
+    return runningGame->getDefaultHamster().mouthEmpty();
 }
 
 void deinit() {

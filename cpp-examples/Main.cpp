@@ -2,9 +2,11 @@
 
 int main() {
     init();
-    //turnLeft();
+    int count = 0;
     while(frontIsClear()) {
         move();
+        count++;
+        writef("I'm walking: %d", count);
     }
     deinit();
     return 0;
