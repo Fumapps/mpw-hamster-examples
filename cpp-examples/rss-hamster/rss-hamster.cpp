@@ -6,6 +6,7 @@
 extern int main(void);
 
 void execCommand(const std::function<void(Hamster&)>&);
+void execCommand(Hamster& hamster, const std::function<void(Hamster&)>&);
 
 using namespace mpw;
 using namespace hamster;
@@ -27,20 +28,42 @@ void SimpleHamsterGameInC::run() {
         } catch (std::exception ex) {};
 	});
 
-    while (const std::function<void(Hamster&)>& command = commandQueue.front()) {
+    bool terminate = false;
+    do {
+        const HamsterAndCommand& command = commandQueue.front();
         commandQueue.pop();
-        try {
-            command(this->getDefaultHamster());
-            resultQueue.push(std::optional<std::exception>());
-        } catch (std::exception& e) {
-            resultQueue.push(std::make_optional(e));
-            this->game->confirmAlert(e);
-            this->game->stopGame();
-            break;
+        if (command.function != nullptr) {
+            try {
+                command.function(command.target);
+                resultQueue.push(std::optional<std::exception>());
+            } catch (std::exception &e) {
+                resultQueue.push(std::make_optional(e));
+                this->game->confirmAlert(e);
+                this->game->stopGame();
+                break;
+            }
+        } else {
+            terminate = true;
         }
-    }
+    } while (!terminate);
     resultQueue.push(std::optional<std::exception>());
     mainThread.join();
+}
+
+Direction getDirection(int direction) {
+    switch(direction) {
+        case NORTH: return Direction::NORTH;
+        case SOUTH: return Direction::SOUTH;
+        case EAST: return Direction::EAST;
+        case WEST: return Direction::WEST;
+        default: throw std::exception();
+    }
+}
+
+HamsterSpec SimpleHamsterGameInC::addHamster(int row, int column, int direction, int grainCount) {
+    Location newLocation(column,row);
+    Direction newDirection = getDirection(direction);
+    return HamsterSpec(additionalHamsters.emplace_back(runningGame->game->getTerritory(), newLocation, newDirection, grainCount));
 };
 
 void init(void) {
@@ -64,16 +87,32 @@ void turnLeft() {
     execCommand(&hamster::Hamster::turnLeft);
 }
 
+void turnLeft(HamsterSpec hamster) {
+    execCommand(hamster.hamster,&hamster::Hamster::turnLeft);
+}
+
 void move() {
     execCommand(&hamster::Hamster::move);
+}
+
+void move(HamsterSpec hamster) {
+    execCommand(hamster.hamster, &hamster::Hamster::move);
 }
 
 void pickGrain() {
     execCommand(&hamster::Hamster::pickGrain);
 }
 
+void pickGrain(HamsterSpec hamster) {
+    execCommand(hamster.hamster,&hamster::Hamster::pickGrain);
+}
+
 void putGrain() {
     execCommand(&hamster::Hamster::putGrain);
+}
+
+void putGrain(HamsterSpec hamster) {
+    execCommand(hamster.hamster,&hamster::Hamster::putGrain);
 }
 
 void write(const char *message) {
@@ -103,14 +142,26 @@ bool mouthEmpty() {
 }
 
 void deinit() {
-    runningGame->sendCommand(nullptr);
+    runningGame->sendCommand(runningGame->getDefaultHamster(), nullptr);
 	gameRunnerLock.release();
 	runningGame = nullptr;
 }
 
 void execCommand(const std::function<void(Hamster&)>& f) {
-    auto result = runningGame->sendCommand(f);
+    execCommand(runningGame->getDefaultHamster(), f);
+}
+
+void execCommand(Hamster& target, const std::function<void(Hamster&)>& f) {
+    auto result = runningGame->sendCommand(target, f);
     if (result.has_value()) {
         throw result.value();
     }
 }
+
+HamsterSpec addHamster(int row, int column, int direction, int grainCount) {
+    return runningGame->addHamster(row, column, direction, grainCount);
+}
+
+HamsterSpec::HamsterSpec(Hamster &hamster) : hamster(hamster) {}
+
+HamsterAndCommand::HamsterAndCommand(Hamster &target, std::function<void(Hamster &)> function) : target(target), function(function) {}

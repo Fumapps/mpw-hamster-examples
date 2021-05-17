@@ -8,6 +8,24 @@ using namespace mpw;
 using namespace hamster;
 using namespace hamstersimulator;
 
+const int NORTH = 0;
+const int SOUTH = 1;
+const int EAST = 2;
+const int WEST = 3;
+
+typedef struct HamsterSpec {
+    HamsterSpec(Hamster &hamster);
+
+    Hamster& hamster;
+} HamsterSpec;
+
+typedef struct HamsterAndCommand {
+    HamsterAndCommand(Hamster &target,
+                      std::function<void(Hamster &)> function);
+    Hamster& target;
+    std::function<void(Hamster&)> function;
+} HamsterAndCommand;
+
 class SimpleHamsterGameInC : public SimpleHamsterGame {
 public:
     static void createInstance(std::string& territoryFilename) {
@@ -15,28 +33,26 @@ public:
         program.doRun();
     }
 private:
-    blocking_queue<std::function<void(Hamster&)>> commandQueue;
+    blocking_queue<HamsterAndCommand> commandQueue;
     blocking_queue<std::optional<std::exception>> resultQueue;
     std::string& territoryFilename;
+    std::vector<Hamster> additionalHamsters;
 public:
     SimpleHamsterGameInC(std::string& territoryFilename) : commandQueue(1), resultQueue(1), territoryFilename(territoryFilename){};
 	Hamster& getDefaultHamster() const {
 		return this->paule;
 	}
 	void run() override;
-	std::optional<std::exception> sendCommand(std::function<void(Hamster&)> command) {
-        commandQueue.push(command);
+	std::optional<std::exception> sendCommand(Hamster& target, std::function<void(Hamster&)> command) {
+        commandQueue.push(HamsterAndCommand(target,command));
         auto result = resultQueue.front();
         resultQueue.pop();
         return result;
 	}
+	HamsterSpec addHamster(int row, int column, int direction, int grainCount);
 };
 
 extern SimpleHamsterGameInC* runningGame;
-
-typedef struct HamsterSpec {
-    Hamster& hamster;
-} HamsterSpec;
 
 /** \brief Initializes the Hamster Simulator, sets up a default territory, and places Paule in it.
  *
@@ -166,13 +182,13 @@ int readNumber(HamsterSpec hamster, const char *message);
 */
 void deinit(void);
 
-/** \brief Returns true if the tile in front of the hmaster is clear
+/** \brief Returns true if the tile in front of the hamster is clear
 *
 * \result true if the tile in front of the hamster is clear
 */
 bool frontIsClear(void);
 
-/** \brief Returns true if there are grains availabe to pick up on the hamster's current tile
+/** \brief Returns true if there are grains available to pick up on the hamster's current tile
 *
 * \result true if the hamster's current tile contains at least one grain
 */
@@ -192,7 +208,7 @@ bool mouthEmpty();
 */
 void write(const char *message);
 
-/** \brief Lets the hamster say a message formated with the same format string used in printf
+/** \brief Lets the hamster say a message formatted with the same format string used in printf
 *
 * Lets the hamster say a message formated with the same format string used in printf. The number
 * of arguments has to match the number of format placeholders used. It is also not necessary to
